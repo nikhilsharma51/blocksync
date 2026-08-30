@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-subtle: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --muted: #64748b;
+  --accent: #0284c7;
+  
+  /* Department Colors */
+  --dept-track: #ea580c;
+  --dept-track-bg: #fff7ed;
+  --dept-track-border: #fdba74;
+  
+  --dept-signal: #2563eb;
+  --dept-signal-bg: #eff6ff;
+  --dept-signal-border: #93c5fd;
+  
+  --dept-ohe: #d97706;
+  --dept-ohe-bg: #fffbeb;
+  --dept-ohe-border: #fcd34d;
+  
+  /* Status Colors */
+  --status-clash: #dc2626;
+  --status-clash-bg: #fef2f2;
+  --status-clash-border: #fca5a5;
+  
+  --status-resolved: #16a34a;
+  --status-resolved-bg: #f0fdf4;
+  --status-resolved-border: #86efac;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Striped Patterns for Operational Clarity */
+
+.pattern-clash {
+  background-color: #fef2f2;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(220, 38, 38, 0.12),
+    rgba(220, 38, 38, 0.12) 8px,
+    rgba(254, 242, 242, 0.9) 8px,
+    rgba(254, 242, 242, 0.9) 16px
+  );
+  border: 1.5px solid #ef4444;
+}
+
+.pattern-joint-block {
+  background-color: #fefce8;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(234, 88, 12, 0.14),
+    rgba(234, 88, 12, 0.14) 10px,
+    rgba(217, 119, 6, 0.14) 10px,
+    rgba(217, 119, 6, 0.14) 20px
+  );
+  border: 2px dashed #ea580c;
+}
+
+/* Custom Scrollbar for Dense Operational Views */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Subtle transitions & accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

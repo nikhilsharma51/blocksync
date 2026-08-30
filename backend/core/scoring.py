@@ -46,10 +46,15 @@ W_TRF: float = 0.20   # Traffic / asset-criticality weight
 # Overdue days are capped at this value to prevent runaway scores
 OVERDUE_CAP_DAYS: int = 30
 
-# Traffic weight lookup for the three asset classes
+# Traffic weight lookup for the three asset classes.
+# NOTE: These are the canonical defaults used by traffic_weight_from_asset_class().
+# Individual corridor definitions in generate_demo_data.py and corridors.py
+# may use a more precise weight (e.g. DLI-RE-SL uses 0.7 — an intermediate
+# branch line — rather than the standard Branch Line default of 0.6).
+# Always use the corridor's explicit traffic_weight when available.
 ASSET_CLASS_WEIGHTS: dict[str, float] = {
     "Mainline Trunk": 1.0,
-    "Branch Line":    0.6,
+    "Branch Line":    0.6,   # Standard branch line default; DLI-RE-SL overrides to 0.7
     "Yard/Loop":      0.3,
 }
 

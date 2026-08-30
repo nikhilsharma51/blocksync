@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-30T14:55:54.841215+00:00",
+  "generated_at": "2026-08-30T16:22:04.274267+00:00",
   "random_seed": 42,
   "base_date": "2026-09-02T00:00:00+00:00",
   "plan_horizon_days": 7,
@@ -17,13 +17,13 @@
     "Pending": 119
   },
   "tasks_by_priority": {
-    "P2": 55,
-    "P1": 86,
+    "P1": 88,
+    "P2": 53,
     "P0": 9
   },
   "score_min": 18.5,
   "score_max": 100.0,
-  "score_avg": 55.96,
+  "score_avg": 56.25,
   "jury_hook_scenarios": {
     "scenario_1_integrated_block": {
       "task_a": "TRK-1000",

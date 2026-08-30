@@ -79,6 +79,8 @@ ON CONFLICT (code) DO NOTHING;
 CREATE TABLE IF NOT EXISTS block_windows (
     id              SERIAL PRIMARY KEY,
     corridor_id     INTEGER      NOT NULL REFERENCES corridors(id) ON DELETE CASCADE,
+    corridor_code   VARCHAR(30)  NOT NULL DEFAULT '',  -- denormalised for fast API reads
+    corridor_name   VARCHAR(150) NOT NULL DEFAULT '',  -- denormalised for fast API reads
     window_label    VARCHAR(50)  NOT NULL DEFAULT 'Night Gold Window',
     -- 'Night Gold Window' | 'Midday Freight Window' | 'Early Morning Window' | 'Emergency Window'
     start_time      TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -125,6 +127,9 @@ CREATE TABLE IF NOT EXISTS maintenance_tasks (
     -- Timing
     est_duration_min    INTEGER      NOT NULL CHECK (est_duration_min > 0),
     requested_start     TIMESTAMP WITH TIME ZONE,
+    requested_end       TIMESTAMP WITH TIME ZONE
+                        GENERATED ALWAYS AS
+                            (requested_start + (est_duration_min || ' minutes')::INTERVAL) STORED,
 
     -- Scoring (populated by scoring engine before INSERT)
     criticality_score   NUMERIC(5,2) CHECK (criticality_score BETWEEN 0 AND 100),
@@ -177,7 +182,7 @@ CREATE TRIGGER trg_tasks_updated_at
 -- Populated by the conflict-detection pass before the optimizer runs.
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS conflict_pairs (
-    id                  SERIAL PRIMARY KEY,
+    id                  VARCHAR(20)  PRIMARY KEY,   -- e.g. conf-0001 (matches JSON)
     task_a_id           VARCHAR(20) NOT NULL REFERENCES maintenance_tasks(id),
     task_b_id           VARCHAR(20) NOT NULL REFERENCES maintenance_tasks(id),
     corridor_id         INTEGER     NOT NULL REFERENCES corridors(id),
@@ -190,7 +195,8 @@ CREATE TABLE IF NOT EXISTS conflict_pairs (
     resolution_strategy TEXT,
     detected_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
-    CONSTRAINT different_tasks CHECK (task_a_id <> task_b_id)
+    CONSTRAINT different_tasks     CHECK (task_a_id <> task_b_id),
+    CONSTRAINT unique_conflict_pair UNIQUE (task_a_id, task_b_id, corridor_id)
 );
 
 COMMENT ON TABLE conflict_pairs IS
@@ -323,7 +329,7 @@ SELECT
     mt.priority_level               AS priority,
     mt.status,
     mt.requested_start,
-    mt.requested_start + (mt.est_duration_min || ' minutes')::INTERVAL AS requested_end,
+    mt.requested_end,
     mt.is_compatible_with,
     mt.power_disconnection_required,
     mt.crew_size,
@@ -344,6 +350,7 @@ SELECT
     bw.id                           AS window_id,
     c.code                          AS corridor_id,
     c.name                          AS corridor_name,
+    bw.corridor_code,
     bw.window_label,
     bw.start_time,
     bw.end_time,

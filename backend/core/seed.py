@@ -87,9 +87,11 @@ def seed_via_supabase(tasks: list[dict], windows: list[dict], conflicts: list[di
     client: Client = create_client(url, key)
 
     if reset:
-        print("Resetting tables (truncate)...")
+        print("Resetting data tables (preserving departments and corridors)...")
+        # Do NOT delete departments or corridors — they are seeded by the migration
+        # and are required as FK parents for maintenance_tasks and block_windows.
         for table in ["block_assignments", "unscheduled_tasks", "conflict_pairs",
-                       "maintenance_tasks", "block_windows", "corridors", "departments"]:
+                       "maintenance_tasks", "block_windows"]:
             try:
                 client.table(table).delete().neq("id", -999999).execute()
                 print(f"  Cleared {table}")
@@ -101,13 +103,15 @@ def seed_via_supabase(tasks: list[dict], windows: list[dict], conflicts: list[di
     window_rows = []
     for w in windows:
         window_rows.append({
-            "id":           w["id"],
-            "corridor_id":  w["corridor_id"],
-            "window_label": w.get("window_label", "Night Gold Window"),
-            "start_time":   w["start_time"],
-            "end_time":     w["end_time"],
-            "source":       w.get("source", "COA_Timetable_Gap"),
-            "is_available": w.get("is_available", True),
+            "id":            w["id"],
+            "corridor_id":   w["corridor_id"],
+            "corridor_code": w.get("corridor_code", ""),
+            "corridor_name": w.get("corridor_name", ""),
+            "window_label":  w.get("window_label", "Night Gold Window"),
+            "start_time":    w["start_time"],
+            "end_time":      w["end_time"],
+            "source":        w.get("source", "COA_Timetable_Gap"),
+            "is_available":  w.get("is_available", True),
         })
     _batch_upsert(client, "block_windows", window_rows, batch_size=50)
     print(f"  ✓ {len(window_rows)} windows inserted")
@@ -153,6 +157,7 @@ def seed_via_supabase(tasks: list[dict], windows: list[dict], conflicts: list[di
     conflict_rows = []
     for c in conflicts:
         conflict_rows.append({
+            "id":                   c["id"],        # string e.g. "conf-0001"
             "task_a_id":            c["task_a_id"],
             "task_b_id":            c["task_b_id"],
             "corridor_id":          c["corridor_id"],
@@ -221,14 +226,17 @@ def seed_via_psycopg2(tasks: list[dict], windows: list[dict], conflicts: list[di
         print(f"Inserting {len(windows)} windows...")
         window_data = [
             (
-                w["id"], w["corridor_id"], w.get("window_label", "Night Gold Window"),
+                w["id"], w["corridor_id"],
+                w.get("corridor_code", ""), w.get("corridor_name", ""),
+                w.get("window_label", "Night Gold Window"),
                 w["start_time"], w["end_time"], w.get("source", "COA_Timetable_Gap"),
                 w.get("is_available", True),
             )
             for w in windows
         ]
         extras.execute_values(cur, """
-            INSERT INTO block_windows (id, corridor_id, window_label, start_time, end_time, source, is_available)
+            INSERT INTO block_windows (id, corridor_id, corridor_code, corridor_name,
+                window_label, start_time, end_time, source, is_available)
             VALUES %s
             ON CONFLICT (id) DO NOTHING
         """, window_data)
@@ -264,11 +272,11 @@ def seed_via_psycopg2(tasks: list[dict], windows: list[dict], conflicts: list[di
             ON CONFLICT (id) DO NOTHING
         """, task_data)
 
-        # Insert conflict pairs
         if conflicts:
             print(f"Inserting {len(conflicts)} conflict pairs...")
             conflict_data = [
                 (
+                    c["id"],                          # string PK e.g. "conf-0001"
                     c["task_a_id"], c["task_b_id"], c["corridor_id"],
                     c["overlap_start"], c["overlap_end"], c["overlap_duration_min"],
                     c["conflict_severity"], c["conflict_type"], c.get("resolution_strategy"),
@@ -277,11 +285,11 @@ def seed_via_psycopg2(tasks: list[dict], windows: list[dict], conflicts: list[di
             ]
             extras.execute_values(cur, """
                 INSERT INTO conflict_pairs (
-                    task_a_id, task_b_id, corridor_id,
+                    id, task_a_id, task_b_id, corridor_id,
                     overlap_start, overlap_end, overlap_duration_min,
                     conflict_severity, conflict_type, resolution_strategy
                 ) VALUES %s
-                ON CONFLICT DO NOTHING
+                ON CONFLICT (id) DO NOTHING
             """, conflict_data)
 
         conn.commit()

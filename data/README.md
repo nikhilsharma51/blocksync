@@ -118,7 +118,8 @@ norm_overdue  = min(days_overdue / 30, 1.0) × 100  → [0, 100], capped at 30 d
 norm_traffic  = traffic_weight × 100         → [10, 100]
 
 traffic_weight:  Mainline Trunk = 1.0
-                 Branch Line    = 0.6
+                 Branch Line (standard) = 0.6
+                 DLI-RE-SL (intermediate branch) = 0.7
                  Yard / Loop    = 0.3
 ```
 

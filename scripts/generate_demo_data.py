@@ -415,32 +415,40 @@ def generate_tasks() -> list[dict]:
     # -----------------------------------------------------------------------
     # Track and OHE both request the exact same corridor (NDLS-GZB-UP) at the
     # exact same time (Monday 02:00). The optimizer merges them into one block.
+    #
+    # Both tasks are given high severity/overdue so they appear at the top of
+    # the priority queue and get processed consecutively by the scheduler.
+    # Severity 4 + 7 days overdue on Mainline = score ~84 (P0).
     # -----------------------------------------------------------------------
     s1_start = BASE_DATE + timedelta(hours=2)          # Mon 02:00
 
-    tasks.append(_build_task(
+    t1 = _build_task(
         task_id       = next_id("TRK"),                # TRK-1000
         dept_code     = "TRK",
         corridor_id   = 1,                             # NDLS-GZB-UP
         defect_tuple  = DEFECT_CATALOGUE["TRK"][2],    # Tamping
-        days_overdue  = 5,
+        days_overdue  = 7,
         req_start     = s1_start,
-        severity_override = 2,
+        severity_override = 4,
         compatible_with   = "OHE",
         status        = "Clashed",
-    ))
+    )
+    t1["joint_pair_id"] = "S1"   # Explicit pairing key for the scheduler
+    tasks.append(t1)
 
-    tasks.append(_build_task(
+    t2 = _build_task(
         task_id       = next_id("OHE"),                # OHE-3000
         dept_code     = "OHE",
         corridor_id   = 1,                             # NDLS-GZB-UP
         defect_tuple  = DEFECT_CATALOGUE["OHE"][2],    # Insulator Flashover
-        days_overdue  = 2,
+        days_overdue  = 6,
         req_start     = s1_start,
-        severity_override = 2,
+        severity_override = 4,
         compatible_with   = "TRK",
         status        = "Clashed",
-    ))
+    )
+    t2["joint_pair_id"] = "S1"   # Explicit pairing key for the scheduler
+    tasks.append(t2)
 
     # -----------------------------------------------------------------------
     # SCENARIO 2 — THE SAFETY OVERRIDE  (Jury-Hook B)
@@ -496,7 +504,9 @@ def generate_tasks() -> list[dict]:
         compatible_with   = None,
         status        = "Deferred",
     )
-    # Override duration to 360 min (6 hours) to guarantee infeasibility
+    # Override duration to 360 min (6 hours) to guarantee infeasibility.
+    # The criticality_score was already calculated correctly in _build_task()
+    # and is unaffected by duration — no score recalculation needed.
     impossible_task["est_duration_min"] = 360
     impossible_task["requested_end"]    = (
         s3_start + timedelta(minutes=360)
@@ -762,7 +772,7 @@ def detect_conflicts(tasks: list[dict]) -> list[dict]:
             })
             conf_id += 1
 
-            # Only flag the explicit scenario clashes as "Clashed"
+            # Only upgrade status to Clashed — never overwrite Deferred or Scheduled
             if task_a["status"] == "Pending":
                 task_a["status"] = "Clashed"
             if task_b["status"] == "Pending":

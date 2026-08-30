@@ -3,7 +3,9 @@ backend/api/routes/tasks.py
 ============================
 GET /api/v1/tasks/pending
 GET /api/v1/tasks/{task_id}
-GET /api/v1/conflicts
+GET /api/v1/tasks
+
+Note: GET /api/v1/conflicts lives in optimize.py (same API prefix).
 
 Branch: hriday-dataset | Author: Hriday
 
@@ -24,8 +26,6 @@ from backend.api.schemas import (
     PendingTaskResponse,
     PendingTasksEnvelope,
     ScoreBreakdown,
-    ConflictPairResponse,
-    ConflictsEnvelope,
 )
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
@@ -49,28 +49,22 @@ def _load_tasks() -> list[dict]:
         return json.load(fh)
 
 
-@lru_cache(maxsize=1)
-def _load_conflicts() -> list[dict]:
-    path = os.path.join(DATA_DIR, "conflict_pairs.json")
-    if not os.path.exists(path):
-        return []
-    with open(path, encoding="utf-8") as fh:
-        return json.load(fh)
-
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 def _task_to_response(t: dict) -> PendingTaskResponse:
     breakdown = t.get("score_breakdown") or {}
-    score_bd = ScoreBreakdown(
-        severity_component = t.get("score_severity_component") or breakdown.get("severity_component", 0.0),
-        overdue_component  = t.get("score_overdue_component")  or breakdown.get("overdue_component",  0.0),
-        traffic_component  = t.get("score_traffic_component")  or breakdown.get("traffic_component",  0.0),
-        total_score        = t.get("criticality_score", 0.0),
-        formula            = t.get("score_formula") or breakdown.get("formula", ""),
-    ) if (t.get("score_severity_component") or breakdown) else None
+    score_bd = None
+    sev_comp = t.get("score_severity_component")
+    if sev_comp is not None:
+        score_bd = ScoreBreakdown(
+            severity_component = sev_comp,
+            overdue_component  = t.get("score_overdue_component", 0.0),
+            traffic_component  = t.get("score_traffic_component", 0.0),
+            total_score        = t.get("criticality_score", 0.0),
+            formula            = t.get("score_formula", ""),
+        )
 
     return PendingTaskResponse(
         id                           = t["id"],

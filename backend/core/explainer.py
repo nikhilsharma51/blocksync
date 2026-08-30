@@ -23,7 +23,8 @@ explanation is generated locally — so the demo never crashes during a live jud
 
 MODEL
 -----
-Uses gemini-2.5-flash for low latency on quick two-sentence outputs.
+Uses gemini-2.5-flash via the google-genai (v1.x) SDK.
+Install: pip install google-genai==1.16.0
 """
 
 from __future__ import annotations
@@ -136,16 +137,19 @@ def generate_explanation(task_data: dict) -> str:
         return _rule_based_explanation(task_data)
 
     try:
-        import google.generativeai as genai  # type: ignore
+        from google import genai as google_genai  # type: ignore
 
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=SYSTEM_PROMPT,
+        client = google_genai.Client(api_key=api_key)
+        prompt = (
+            f"{SYSTEM_PROMPT}\n\n"
+            f"Explain this maintenance block assignment:\n"
+            f"{json.dumps(task_data, indent=2)}"
         )
-        prompt = f"Explain this maintenance block assignment:\n{json.dumps(task_data, indent=2)}"
-        response = model.generate_content(prompt)
-        text = response.text.strip()
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        text = response.text.strip() if response.text else ""
         if text:
             return text
         # Empty response — fall through to fallback
@@ -154,8 +158,8 @@ def generate_explanation(task_data: dict) -> str:
 
     except ImportError:
         logger.error(
-            "google-generativeai package not installed. "
-            "Run: pip install google-generativeai==0.8.4"
+            "google-genai package not installed. "
+            "Run: pip install google-genai==1.16.0"
         )
         return _rule_based_explanation(task_data)
 
@@ -193,7 +197,7 @@ def _assignment_to_prompt_dict(assignment: dict) -> dict:
     return {
         "task_id":               task.get("id") or assignment.get("task_id"),
         "defect":                task.get("defect_type") or task.get("title", "maintenance work"),
-        "severity":              task.get("severity") or task.get("defect", {}).get("severity"),
+        "severity":              task.get("severity"),
         "days_overdue":          task.get("days_overdue") or task.get("defect", {}).get("overdueDays", 0),
         "score":                 task.get("criticality_score") or task.get("criticalityScore"),
         "corridor":              task.get("corridor_name") or task.get("corridorName"),

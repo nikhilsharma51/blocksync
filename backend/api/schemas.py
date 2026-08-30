@@ -203,7 +203,7 @@ class AssignedTaskResponse(BaseModel):
     assigned_end:       str   = Field(..., description="ISO-8601 UTC")
     is_integrated:      bool  = False
     joint_block_id:     Optional[str] = None
-    merged_departments: Optional[list[str]] = None
+    merged_departments: list[str] = Field(default_factory=list, description="Departments in this joint block; empty list if not integrated")
     window_type:        str   = "Night Gold Window"
     ai_explanation:     Optional[str] = None
 

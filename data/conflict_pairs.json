@@ -8,11 +8,11 @@
     "overlap_start": "2026-09-02T02:00:00+00:00",
     "overlap_end": "2026-09-02T04:00:00+00:00",
     "overlap_duration_min": 120,
-    "conflict_severity": "Moderate",
+    "conflict_severity": "High",
     "conflict_type": "Power/OHE Dependency",
     "resolution_strategy": "Merge into Integrated Joint Block on New Delhi - Ghaziabad (UP Main). Shared traction power isolation saves ~120 minutes corridor downtime.",
-    "task_a_score": 43.83,
-    "task_b_score": 40.33
+    "task_a_score": 64.17,
+    "task_b_score": 63.0
   },
   {
     "id": "conf-0002",

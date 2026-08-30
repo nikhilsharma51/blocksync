@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-08-30T16:48:34.990674+00:00",
+  "random_seed": 42,
+  "base_date": "2026-09-02T00:00:00+00:00",
+  "plan_horizon_days": 7,
+  "total_tasks": 150,
+  "total_windows": 148,
+  "total_conflicts": 17,
+  "tasks_by_department": {
+    "TRK": 60,
+    "OHE": 46,
+    "SNT": 44
+  },
+  "tasks_by_status": {
+    "Clashed": 30,
+    "Deferred": 1,
+    "Pending": 119
+  },
+  "tasks_by_priority": {
+    "P1": 88,
+    "P2": 53,
+    "P0": 9
+  },
+  "score_min": 18.5,
+  "score_max": 100.0,
+  "score_avg": 56.25,
+  "jury_hook_scenarios": {
+    "scenario_1_integrated_block": {
+      "task_a": "TRK-1000",
+      "task_b": "OHE-3000",
+      "corridor": "NDLS-GZB-UP",
+      "description": "Track and OHE clash at same time on same corridor — optimizer merges into one Integrated Joint Block."
+    },
+    "scenario_2_safety_override": {
+      "task_low_score": "SNT-2000",
+      "task_high_score": "TRK-1001",
+      "corridor": "DLI-RE-SL",
+      "description": "Rail Fracture (Sev 5, 15 overdue) beats Signal LED change (Sev 1, 0 overdue) for the same slot."
+    },
+    "scenario_3_impossible_task": {
+      "task_id": "TRK-1002",
+      "corridor": "NDLS-GZB-UP",
+      "requested_duration_min": 360,
+      "max_available_window_min": 240,
+      "description": "6-hour request on a corridor with max 4-hour windows — graceful deferral with reason."
+    }
+  }
+}

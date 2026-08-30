@@ -4,6 +4,14 @@ export type PriorityLevel = 'P0' | 'P1' | 'P2';
 
 export type TaskStatus = 'Pending' | 'Clashed' | 'Scheduled' | 'Merged' | 'Deferred' | 'Approved';
 
+export type ActivePageView =
+  | 'conflicts'
+  | 'optimized'
+  | 'intake'
+  | 'safety'
+  | 'corridormap'
+  | 'execution';
+
 export interface CorridorSection {
   id: string;
   name: string;
@@ -134,4 +142,95 @@ export interface SolverStats {
   totalTasksUnscheduled: number;
   constraintsEvaluated: number;
   objectiveValue: number;
+}
+
+// Page 3: Department Feeds & Intake
+export interface DepartmentDefectFeedItem {
+  id: string;
+  taskNumber: number;
+  department: Department;
+  sourceSystem: 'TMS' | 'SMMS' | 'TDMS';
+  defectCode: string;
+  defectCategory: string;
+  corridorName: string;
+  trackKm: string;
+  severity: 1 | 2 | 3 | 4 | 5;
+  overdueDays: number;
+  estimatedMinutes: number;
+  requestedDateTime: string;
+  status: 'Pending' | 'Queued' | 'Scheduled' | 'Merged' | 'Rejected';
+  powerBlockRequired: boolean;
+}
+
+// Page 4: Safety & SLA Dashboard
+export interface DefectAgingBucket {
+  bucket: string;       // "0-3 Days", "4-7 Days", "8-14 Days", "15+ Days"
+  Track: number;
+  Signal: number;
+  OHE: number;
+}
+
+export interface MonthlySavedHours {
+  month: string;
+  standaloneBlockHours: number;
+  integratedBlockHours: number;
+  hoursSaved: number;
+}
+
+export interface BottleneckCorridor {
+  corridor: string;
+  trainPathsPerDay: number;
+  avgFreeWindowMins: number;
+  pendingDefects: number;
+  congestionIndex: 'Severe' | 'High' | 'Moderate';
+  speedRestrictionKm: string;
+}
+
+// Page 5: Corridor Timetable & Free Windows
+export interface StationNode {
+  name: string;
+  code: string;
+  km: number;
+  tracks: number;
+  isJunction: boolean;
+}
+
+export interface TimetableFreeWindow {
+  id: string;
+  corridorId: string;
+  line: 'UP' | 'DOWN';
+  startHour: number;
+  endHour: number;
+  durationMins: number;
+  isGoldWindow: boolean; // 01:30 - 05:00 AM
+  conflictingTrainCount: number;
+  goodsTrainBuffer: string;
+}
+
+// Page 6: Execution Kanban & Audit Log
+export type ExecutionStatus = 'SCHEDULED' | 'GRANTED' | 'IN_PROGRESS' | 'RESTORED' | 'CANCELLED';
+
+export interface ExecutionBlockItem {
+  id: string;
+  blockNumber: string;
+  taskTitle: string;
+  department: Department;
+  corridorName: string;
+  timeWindow: string;
+  status: ExecutionStatus;
+  isIntegrated: boolean;
+  supervisor: string;
+  speedRestriction: string;
+  lastUpdated: string;
+}
+
+export interface AuditTrailLog {
+  id: string;
+  timestamp: string;
+  userRole: string;
+  action: string;
+  targetTask: string;
+  previousValue: string;
+  newValue: string;
+  validationStatus: 'Constraint Passed' | 'Approved by DOM' | 'Re-Validated';
 }

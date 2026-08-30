@@ -5,22 +5,23 @@ import {
   Train,
   Clock,
   Zap,
-  CheckCircle2,
-  AlertTriangle,
-  SlidersHorizontal,
   ChevronDown,
   Sparkles,
   ShieldCheck,
+  Award,
+  AlertTriangle,
 } from 'lucide-react';
-import { Department } from '../../types/railway';
+import { Department, ActivePageView } from '../../types/railway';
 
 interface AppHeaderProps {
-  activeView: 'conflicts' | 'optimized';
-  onViewChange: (view: 'conflicts' | 'optimized') => void;
+  activeView: ActivePageView;
+  onViewChange: (view: ActivePageView) => void;
   onRunOptimizer: () => void;
   selectedDepartments: Department[];
   onToggleDepartment: (dept: Department) => void;
   isPlanApproved?: boolean;
+  onToggleDemoMode: () => void;
+  isDemoModeOpen: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -30,12 +31,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   selectedDepartments,
   onToggleDepartment,
   isPlanApproved = false,
+  onToggleDemoMode,
+  isDemoModeOpen,
 }) => {
-  const [currentTime, setCurrentTime] = useState<string>('30 Aug 2026, 19:10:00 IST');
-  const [selectedDivision, setSelectedDivision] = useState<string>('Delhi - Kanpur Mainline (Northern Railway)');
+  const [currentTime, setCurrentTime] = useState<string>('19:10:00 IST');
+  const [selectedDivision, setSelectedDivision] = useState<string>('Delhi - Kanpur Mainline');
 
   useEffect(() => {
-    // Realistic live clock simulation
     const updateTime = () => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-IN', {
@@ -44,164 +46,136 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         second: '2-digit',
         hour12: false,
       });
-      setCurrentTime(`30 Aug 2026, ${timeStr} IST`);
+      setCurrentTime(`${timeStr} IST`);
     };
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
-      {/* Top Banner with System Status and Division Context */}
-      <div className="flex flex-wrap items-center justify-between px-6 py-2.5 bg-slate-50 border-b border-slate-100 text-xs text-slate-600 gap-3">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 font-medium text-slate-900">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-slate-500 font-normal">System:</span> CRiS Timetable & TMS Synced
-          </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-500">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-mono text-slate-700">{currentTime}</span>
-            <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold text-[10px]">SHIFT-B</span>
-          </div>
-        </div>
-
+    <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 h-14 gap-4">
+        {/* Left: Division & Horizon Context */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-slate-500">
-            <span className="font-normal text-slate-500">Engine:</span>
-            <span className="font-medium text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
-              Google OR-Tools CP-SAT v9.8
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-slate-400 font-medium">NR /</span>
+            <div className="relative inline-flex items-center">
+              <select
+                value={selectedDivision}
+                onChange={(e) => setSelectedDivision(e.target.value)}
+                className="appearance-none font-semibold text-slate-900 bg-transparent pr-5 cursor-pointer focus:outline-hidden hover:text-slate-700 text-xs"
+              >
+                <option value="Delhi - Kanpur Mainline">Delhi - Kanpur Mainline</option>
+                <option value="Delhi - Ambala Section">Delhi - Ambala Section</option>
+                <option value="Howrah - Asansol Trunk">Howrah - Asansol Trunk</option>
+                <option value="Mumbai - Surat Corridor">Mumbai - Surat Corridor</option>
+              </select>
+              <ChevronDown className="w-3 h-3 text-slate-400 absolute right-0 pointer-events-none" />
+            </div>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500 font-medium">Week 36 (Aug 31 – Sep 06)</span>
+          </div>
+
+          {isPlanApproved && (
+            <span className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              <span>Bulletin Approved</span>
             </span>
-          </div>
-          {isPlanApproved ? (
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Block Bulletin #BB-2026-36-A Approved</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 font-medium">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              <span>Pending Review & Controller Sign-off</span>
-            </div>
           )}
-        </div>
-      </div>
-
-      {/* Main Action Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between px-6 py-3 gap-4">
-        {/* Left: Division & Horizon Selectors */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
-              <Train className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Division & Route</div>
-              <div className="relative inline-block">
-                <select
-                  value={selectedDivision}
-                  onChange={(e) => setSelectedDivision(e.target.value)}
-                  className="appearance-none font-semibold text-slate-900 bg-transparent pr-6 cursor-pointer focus:outline-hidden hover:text-sky-700 text-sm"
-                >
-                  <option value="Delhi - Kanpur Mainline (Northern Railway)">Delhi - Kanpur Mainline (Northern Railway)</option>
-                  <option value="Delhi - Ambala Cantt Section (NR)">Delhi - Ambala Cantt Section (NR)</option>
-                  <option value="Howrah - Asansol Trunk Section (ER)">Howrah - Asansol Trunk Section (ER)</option>
-                  <option value="Mumbai Central - Surat Corridor (WR)">Mumbai Central - Surat Corridor (WR)</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-0 top-1 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-
-          <div className="h-6 w-px bg-slate-200 hidden md:block" />
-
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Planning Horizon</div>
-            <div className="font-medium text-slate-800 text-sm">
-              Week 36 (Aug 31 – Sep 06, 2026)
-            </div>
-          </div>
         </div>
 
         {/* Center: Department Filters */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium mr-1 hidden lg:inline">Depts:</span>
-          
+        <div className="hidden md:flex items-center gap-1 p-1 bg-slate-100/80 rounded-md border border-slate-200/60 text-xs">
           <button
             onClick={() => onToggleDepartment('Track')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1 rounded transition-all flex items-center gap-1.5 cursor-pointer text-xs font-medium ${
               selectedDepartments.includes('Track')
-                ? 'bg-orange-50 text-orange-900 border-orange-300'
-                : 'bg-white text-slate-400 border-slate-200 opacity-60 hover:opacity-100'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-400 hover:text-slate-600'
             }`}
-            title="Engineering / Track Department (TMS)"
           >
-            <span className="w-2 h-2 rounded-full bg-orange-600"></span>
-            Track (TMS)
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-600"></span>
+            <span>Track</span>
           </button>
 
           <button
             onClick={() => onToggleDepartment('Signal')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1 rounded transition-all flex items-center gap-1.5 cursor-pointer text-xs font-medium ${
               selectedDepartments.includes('Signal')
-                ? 'bg-blue-50 text-blue-900 border-blue-300'
-                : 'bg-white text-slate-400 border-slate-200 opacity-60 hover:opacity-100'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-400 hover:text-slate-600'
             }`}
-            title="Signal & Telecom Department (SMMS)"
           >
-            <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-            Signal (SMMS)
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+            <span>Signal</span>
           </button>
 
           <button
             onClick={() => onToggleDepartment('OHE')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1 rounded transition-all flex items-center gap-1.5 cursor-pointer text-xs font-medium ${
               selectedDepartments.includes('OHE')
-                ? 'bg-amber-50 text-amber-900 border-amber-300'
-                : 'bg-white text-slate-400 border-slate-200 opacity-60 hover:opacity-100'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-400 hover:text-slate-600'
             }`}
-            title="Traction / OHE Power Department (TDMS)"
           >
-            <span className="w-2 h-2 rounded-full bg-amber-600"></span>
-            Traction (TDMS)
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+            <span>Traction</span>
           </button>
         </div>
 
-        {/* Right: View Switcher and AI Optimizer Trigger */}
-        <div className="flex items-center gap-3">
-          {/* Segmented View Switcher */}
-          <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 text-xs font-medium">
+        {/* Right: Actions, Live Clock & Optimizer */}
+        <div className="flex items-center gap-2.5">
+          {/* Live Shift Clock */}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 font-mono pr-1">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <span>{currentTime}</span>
+          </div>
+
+          {/* Judge Demo Mode Toggle */}
+          <button
+            onClick={onToggleDemoMode}
+            className={`px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer border ${
+              isDemoModeOpen
+                ? 'bg-slate-900 text-white border-slate-900'
+                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+            }`}
+            title="Toggle 5-minute Judge Walkthrough presentation bar"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Judge Demo</span>
+          </button>
+
+          {/* Primary View Quick Toggle */}
+          <div className="inline-flex p-0.5 bg-slate-100 rounded-md border border-slate-200 text-xs font-medium">
             <button
               onClick={() => onViewChange('conflicts')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
                 activeView === 'conflicts'
-                  ? 'bg-white text-red-700 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-950 font-bold shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-              <span>1. Conflict Matrix</span>
+              Conflicts
             </button>
             <button
               onClick={() => onViewChange('optimized')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
+              className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
                 activeView === 'optimized'
-                  ? 'bg-white text-emerald-700 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-950 font-bold shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span>2. AI Master Gantt</span>
+              Schedule
             </button>
           </div>
 
-          {/* Core Optimizer Button */}
+          {/* Run CP-SAT Optimizer */}
           <button
             onClick={onRunOptimizer}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-xs font-semibold shadow-sm transition-all focus:outline-hidden focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 active:scale-98"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-950 hover:bg-slate-800 text-white text-xs font-semibold transition-all cursor-pointer active:scale-98 shadow-xs"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            <span>Run CP-SAT Optimizer</span>
+            <Zap className="w-3 h-3 text-amber-300 fill-amber-300" />
+            <span>Solve</span>
           </button>
         </div>
       </div>

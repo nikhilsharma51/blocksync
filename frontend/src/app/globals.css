@@ -2,96 +2,74 @@
 
 :root {
   --background: #f8fafc;
-  --foreground: #0f172a;
+  --foreground: #090d16;
   --surface: #ffffff;
   --surface-subtle: #f1f5f9;
   --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border-subtle: #f1f5f9;
   --muted: #64748b;
-  --accent: #0284c7;
-  
-  /* Department Colors */
-  --dept-track: #ea580c;
-  --dept-track-bg: #fff7ed;
-  --dept-track-border: #fdba74;
-  
-  --dept-signal: #2563eb;
-  --dept-signal-bg: #eff6ff;
-  --dept-signal-border: #93c5fd;
-  
-  --dept-ohe: #d97706;
-  --dept-ohe-bg: #fffbeb;
-  --dept-ohe-border: #fcd34d;
-  
-  /* Status Colors */
-  --status-clash: #dc2626;
-  --status-clash-bg: #fef2f2;
-  --status-clash-border: #fca5a5;
-  
-  --status-resolved: #16a34a;
-  --status-resolved-bg: #f0fdf4;
-  --status-resolved-border: #86efac;
+  --muted-light: #94a3b8;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
-/* Custom Striped Patterns for Operational Clarity */
+/* Minimalist Operational Patterns */
 
 .pattern-clash {
-  background-color: #fef2f2;
+  background-color: rgba(239, 68, 68, 0.08);
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(220, 38, 38, 0.12),
-    rgba(220, 38, 38, 0.12) 8px,
-    rgba(254, 242, 242, 0.9) 8px,
-    rgba(254, 242, 242, 0.9) 16px
+    rgba(220, 38, 38, 0.15),
+    rgba(220, 38, 38, 0.15) 6px,
+    transparent 6px,
+    transparent 12px
   );
-  border: 1.5px solid #ef4444;
+  border: 1px dashed #ef4444;
 }
 
 .pattern-joint-block {
-  background-color: #fefce8;
+  background-color: rgba(245, 158, 11, 0.06);
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(234, 88, 12, 0.14),
-    rgba(234, 88, 12, 0.14) 10px,
-    rgba(217, 119, 6, 0.14) 10px,
-    rgba(217, 119, 6, 0.14) 20px
+    rgba(217, 119, 6, 0.12),
+    rgba(217, 119, 6, 0.12) 6px,
+    transparent 6px,
+    transparent 12px
   );
-  border: 2px dashed #ea580c;
+  border: 1px dashed #d97706;
 }
 
-/* Custom Scrollbar for Dense Operational Views */
+/* Precision Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* Subtle transitions & accessibility */
+/* Smooth transitions */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

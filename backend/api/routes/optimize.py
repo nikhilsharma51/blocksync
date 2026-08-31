@@ -60,6 +60,7 @@ from backend.api.schemas import (
     ExplainResponse,
 )
 from backend.core.explainer import generate_explanation
+from backend.core.optimizer import solve_cpsat, ORTOOLS_AVAILABLE
 
 router = APIRouter(tags=["Optimizer & Explainability"])
 
@@ -553,7 +554,10 @@ def run_optimizer(
     if body.plan_date:
         wins = [w for w in wins if w["start_time"].startswith(body.plan_date)]
 
-    assignments, unscheduled, stats = _greedy_schedule(tasks, wins)
+    if ORTOOLS_AVAILABLE:
+        assignments, unscheduled, stats = solve_cpsat(tasks, wins, max_solve_seconds=body.max_solve_seconds)
+    else:
+        assignments, unscheduled, stats = _greedy_schedule(tasks, wins)
     solve_time = round(time.perf_counter() - t0, 3)
 
     plan_id = f"PLAN-{uuid.uuid4().hex[:5].upper()}"

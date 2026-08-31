@@ -88,11 +88,23 @@ def solve_scheduling_problem(
     """
     t0 = time.perf_counter()
     
-    # For now, use the greedy logic
-    # When Member 1 provides CP-SAT, replace this call
-    assignments, unscheduled, stats = _solve_with_mock_greedy(
-        tasks, windows, conflicts, max_solve_seconds
-    )
+    try:
+        from backend.core.optimizer import solve_cpsat, ORTOOLS_AVAILABLE
+    except ImportError:
+        solve_cpsat = None
+        ORTOOLS_AVAILABLE = False
+
+    if ORTOOLS_AVAILABLE and solve_cpsat:
+        assignments, unscheduled, stats = solve_cpsat(
+            tasks, windows, max_solve_seconds=max_solve_seconds
+        )
+        total_conflicts = len(conflicts) if conflicts else 0
+        stats["total_conflicts"] = total_conflicts
+        stats["status"] = "OPTIMAL" if not unscheduled else "FEASIBLE"
+    else:
+        assignments, unscheduled, stats = _solve_with_mock_greedy(
+            tasks, windows, conflicts, max_solve_seconds
+        )
     
     solve_time = time.perf_counter() - t0
     stats["solve_time_seconds"] = round(solve_time, 3)

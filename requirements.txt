@@ -40,9 +40,9 @@ supabase==2.10.0
 psycopg2-binary==2.9.10       
 
 # ---------------------------------------------------------------------------
-# Optimiser (optional — for Member 1 to plug in CP-SAT)
+# Optimiser (Google OR-Tools for CP-SAT solver)
 # ---------------------------------------------------------------------------
-# ortools==9.11.4210            # Google OR-Tools for CP-SAT solver
+ortools>=9.11.4210            # Google OR-Tools for CP-SAT solver
 
 # ---------------------------------------------------------------------------
 # Utilities

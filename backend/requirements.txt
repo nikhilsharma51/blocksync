@@ -30,13 +30,13 @@ pydantic-settings==2.7.1       # For settings from .env file
 # google-genai is the current (v1.x) SDK that supports gemini-2.5-flash.
 # The old google-generativeai package does NOT support gemini-2.5-flash.
 # ---------------------------------------------------------------------------
-google-genai==1.16.0
+# google-genai==1.16.0
 
 # ---------------------------------------------------------------------------
 # Database (optional — only needed for seeding)
 # ---------------------------------------------------------------------------
 # Uncomment the one you use:
-supabase==2.10.0              
+supabase             
 psycopg2-binary==2.9.10       
 
 # ---------------------------------------------------------------------------

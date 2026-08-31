@@ -33,6 +33,8 @@ import json
 import os
 import sys
 from datetime import datetime, timezone
+from dotenv import load_dotenv
+load_dotenv()
 
 # Allow running from repo root
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
